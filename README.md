@@ -1,34 +1,76 @@
-# 정책한눈 PolicyBrief G2C
+# PolicyBrief G2C
 
-`Policybrief-G2C`는 정부의 주요 정책·브리핑 자료를 수집해 시민이 읽기 쉬운 뉴스레터 초안으로 만드는 Python 기반 MVP입니다. 기본 실행은 오프라인 데모와 로컬 미리보기 중심이며, 실제 이메일 발송은 비활성화되어 있습니다.
+PolicyBrief G2C is a Python-based MVP for collecting official Korean government policy materials, turning them into citizen-friendly summaries, and generating review-ready HTML newsletters or policy briefing reports.
 
-## 주요 기능
+The project is designed for a Government-to-Citizen workflow: official source material goes in, traceable plain-language summaries come out. Email delivery is intentionally disabled by default.
 
-- RSS 및 설정 기반 HTML 수집기
-- 공통 `PolicyDocument` 스키마와 SQLite 저장소
-- 텍스트 정제, 정확·유사 중복 제거
-- 키워드 기반 정책 분야 분류
-- 투명한 중요도 점수 산정
-- 외부 API 없이 동작하는 추출식 요약기
-- 선택형 OpenAI 호환 LLM 요약기와 실패 시 자동 대체
-- Jinja2 기반 HTML/텍스트 뉴스레터 생성
-- 안전 기본값의 SMTP 발송 추상화
+## What It Produces
 
-## 아키텍처
+- A local HTML newsletter for human review
+- A plain-text version of the same issue
+- Structured policy document records with source attribution
+- Citizen-focused summaries with eligibility, application method, impact, dates, and original links when they can be identified from the source
+
+Every generated report or newsletter item keeps the original title, agency, publication date, canonical URL, collection timestamp, and processing metadata.
+
+## Reference Sources For Reports
+
+The MVP does not hard-code live government scraping targets. By default, `policybrief run --demo` uses offline fictional fixtures so the repository works without network access or API keys.
+
+For production, reports should be generated only from explicitly configured official sources in `config/sources.example.yaml` or a private source configuration file. Recommended source categories are:
+
+| Source type | Example official source | Intended use |
+| --- | --- | --- |
+| Central policy portal | `https://www.korea.kr/` | Policy news, press releases, briefing room materials, policy archives, explanatory documents |
+| Korea.kr press releases | `https://www.korea.kr/briefing/pressReleaseList.do` | Cross-ministry press releases and official announcements |
+| Korea.kr policy news | `https://www.korea.kr/news/policyNewsList.do` | Policy news written for the public |
+| Korea.kr expert/archive documents | `https://www.korea.kr/archive/expDocMainList.do` | Longer policy documents and reference materials |
+| Korea.net press releases | `https://www.korea.net/Government/Briefing-Room/Press-Releases` | English-language official Republic of Korea press releases |
+| Public Data Portal | `https://www.data.go.kr/` | Open datasets and Open APIs from Korean public institutions |
+| Ministry press rooms | Example: `https://www.mofa.go.kr/eng/brd/m_5676/list.do` | Ministry-specific announcements where source-specific adapters may be useful |
+| Ministry RSS pages | Example: `https://www.mofa.go.kr/eng/wpge/m_20360/contents.do` | RSS-based collection where an official feed is available |
+
+Operational rule: the generated report must be based only on collected official source text. The summarizer must not add eligibility, deadlines, benefits, procedures, or claims that are absent from the original source.
+
+Before enabling any live source, verify:
+
+- The domain is an official government or public institution domain.
+- The URL, selectors, feed URL, and pagination rules still match the current site.
+- The site terms, robots policy, copyright/reuse conditions, and public-sector reuse rules allow the intended collection.
+- The source can be collected gently with timeouts, retries, request delays, and domain allowlisting.
+
+## Key Features
+
+- Generic RSS collector
+- Configuration-driven HTML collector
+- Pydantic schemas for `PolicyDocument` and `NewsletterIssue`
+- SQLite repository with idempotent writes
+- Text cleaning and normalization
+- Exact and near-duplicate detection with `rapidfuzz`
+- Keyword-based policy classification
+- Transparent importance scoring
+- Offline extractive summarization
+- Optional OpenAI-compatible LLM summarization with extractive fallback
+- Jinja2 HTML and text newsletter rendering
+- SMTP sender abstraction with safe defaults
+- Typer CLI
+- Pytest, Ruff, Mypy, and GitHub Actions configuration
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  A["공식 출처 설정"] --> B["RSS/HTML 수집"]
-  B --> C["PolicyDocument 정규화"]
-  C --> D["정제·중복 제거"]
-  D --> E["분류·중요도 산정"]
-  E --> F["요약 생성"]
-  F --> G["뉴스레터 렌더링"]
-  G --> H["로컬 검토"]
-  H --> I["선택적 이메일 발송"]
+  A["Configured official sources"] --> B["RSS / HTML collectors"]
+  B --> C["PolicyDocument normalization"]
+  C --> D["Cleaning and deduplication"]
+  D --> E["Classification and ranking"]
+  E --> F["Summarization"]
+  F --> G["Newsletter rendering"]
+  G --> H["Local human review"]
+  H --> I["Optional email delivery"]
 ```
 
-## 설치
+## Installation
 
 ```bash
 python -m venv .venv
@@ -37,21 +79,24 @@ python -m pip install -U pip
 python -m pip install -e ".[dev]"
 ```
 
-## 데모 실행
+On macOS or Linux:
 
-외부 네트워크나 API 키 없이 가상 정책 자료로 뉴스레터를 생성합니다.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -e ".[dev]"
+```
+
+## Run The Offline Demo
 
 ```bash
 policybrief run --demo
 ```
 
-결과 HTML과 텍스트 파일은 `data/newsletters/` 아래에 저장됩니다. 반복 실행해도 같은 문서와 같은 이슈 ID로 갱신됩니다.
+The demo loads local fictional policy materials from `tests/fixtures/`, processes them, generates summaries, and writes the newsletter under `data/newsletters/`.
 
-## 설정
-
-`.env.example`을 참고해 `.env`를 만들 수 있습니다. 실제 비밀번호, API 키, 구독자 목록은 Git에 저장하지 않습니다.
-
-출처 설정은 `config/sources.example.yaml` 형식입니다. 실제 운영 전에는 출처 도메인, 선택자, robots/이용정책, 공공저작물 이용 조건을 직접 검증해야 합니다.
+No live website, external API key, or SMTP account is required.
 
 ## CLI
 
@@ -67,11 +112,24 @@ policybrief validate-config
 policybrief show-stats
 ```
 
-`send`는 기본적으로 dry-run입니다. 실제 발송은 `EMAIL_SEND_ENABLED=true`와 `--confirm-send`가 모두 있어야 하며, SMTP와 수신자 설정이 없으면 거부됩니다.
+## Configuration
 
-## 선택형 LLM
+Copy `.env.example` to `.env` and adjust local settings as needed.
 
-기본 요약기는 외부 API를 쓰지 않습니다. LLM을 쓰려면 다음 값을 설정합니다.
+Important settings:
+
+- `SOURCE_CONFIG_PATH`: YAML file containing official source definitions
+- `CATEGORY_CONFIG_PATH`: keyword category configuration
+- `DATABASE_PATH`: local SQLite path
+- `OUTPUT_DIR`: newsletter output directory
+- `SUMMARY_PROVIDER`: `extractive` or `llm`
+- `EMAIL_SEND_ENABLED`: must remain `false` unless real sending is intentionally configured
+
+Do not commit real API keys, SMTP credentials, subscriber lists, generated newsletters, raw production data, or local databases.
+
+## Optional LLM Summarization
+
+The default summarizer works offline. To enable an OpenAI-compatible provider:
 
 ```env
 SUMMARY_PROVIDER=llm
@@ -81,9 +139,11 @@ LLM_BASE_URL=https://api.openai.com/v1
 LLM_MODEL=...
 ```
 
-수집된 원문은 신뢰할 수 없는 데이터로 취급하며, LLM 프롬프트는 원문 안의 명령을 따르지 않도록 분리합니다.
+Collected source text is treated as untrusted data. The LLM prompt explicitly separates source content from instructions and requires structured JSON validated by Pydantic. If the LLM call or validation fails, the pipeline falls back to the extractive summarizer.
 
-## 선택형 SMTP
+## Optional SMTP Delivery
+
+Real email delivery is disabled by default.
 
 ```env
 SMTP_HOST=
@@ -94,9 +154,9 @@ SMTP_FROM=
 EMAIL_SEND_ENABLED=false
 ```
 
-수신자는 `EMAIL_RECIPIENTS` 또는 Git에서 제외된 `subscribers.txt`로 로드합니다. 로그에는 전체 주소 목록을 남기지 않습니다.
+Real sending requires both `EMAIL_SEND_ENABLED=true` and the CLI `--confirm-send` flag. Recipient lists must come from local ignored files or environment variables, not from Git.
 
-## 테스트와 품질 검사
+## Quality Checks
 
 ```bash
 ruff check .
@@ -105,51 +165,35 @@ mypy src
 pytest --cov=policybrief_g2c
 ```
 
-GitHub Actions도 같은 검사를 실행합니다.
-
-## 저장소 구조
+## Repository Structure
 
 ```text
-config/                 출처·분류 설정
-data/                   로컬 DB와 생성 뉴스레터
-docs/                   운영·구조 문서
-src/policybrief_g2c/    애플리케이션 코드
-tests/                  오프라인 테스트와 데모 fixture
+config/                 Source and category configuration
+data/                   Local runtime data, ignored except .gitkeep files
+docs/                   Architecture, schema, source, and operations notes
+src/policybrief_g2c/    Application package
+tests/                  Offline tests and fixtures
 ```
 
-## 보안과 개인정보
+## Safety Principles
 
-- 출처 도메인 allowlist 검증
-- 요청 timeout, retry, 과도한 수집 방지
-- HTML 출력 자동 escaping
-- 비밀값과 구독자 목록 Git 제외
-- 이메일 발송 비활성화 기본값
-- 원문 링크와 기관, 발행일 보존
-- 삭제·정정·보존 정책은 운영 문서에 따라 확장
+- Official-source-first collection
+- Domain allowlisting
+- Request timeout, retry, and delay controls
+- Source traceability for every summary
+- HTML escaping in rendered output
+- No fabricated eligibility, benefits, deadlines, or application procedures
+- No credentials or subscriber lists in Git
+- Email sending disabled by default
+- Human review before delivery
 
-## 로드맵
+## Current Limitations
 
-MVP:
+- Live government source selectors are examples and must be verified before production use.
+- The default classifier is keyword-based, not semantic.
+- The extractive summarizer is deterministic but intentionally conservative.
+- Subscriber preference management and delivery analytics are out of scope for the MVP.
 
-- RSS 및 범용 HTML 수집
-- 결정론적 분류
-- 추출식 요약
-- 로컬 뉴스레터 생성
-- 검토 우선 워크플로
+## Disclaimer
 
-향후:
-
-- 검증된 정부 Open API 연동
-- 출처별 전용 어댑터
-- 구독자 관심사 관리
-- 의미 검색과 대시보드
-- 다국어 요약
-- 사람 승인 워크플로
-- 개인정보 보호형 발송 분석
-- 정정·철회 워크플로
-
-## 한계와 고지
-
-현재 `config/sources.example.yaml`의 URL과 선택자는 예시입니다. 실제 정부 사이트에 적용하기 전 수동 검증이 필요합니다.
-
-이 뉴스레터는 공식 공개 자료를 자동 요약한 초안입니다. 원문 게시물이 최종적이고 권위 있는 출처이며, 세부 내용은 변경될 수 있습니다. 자격, 기한, 절차는 원문 또는 담당 기관을 통해 반드시 확인하세요.
+PolicyBrief G2C generates automated summaries from official public materials. The original publication is the authoritative source. Details may change after collection. Users should verify eligibility, deadlines, application procedures, and legal requirements through the original source or responsible agency.
