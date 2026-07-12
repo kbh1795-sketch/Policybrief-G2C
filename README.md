@@ -187,13 +187,6 @@ tests/                  Offline tests and fixtures
 - Email sending disabled by default
 - Human review before delivery
 
-## Current Limitations
-
-- Live government source selectors are examples and must be verified before production use.
-- The default classifier is keyword-based, not semantic.
-- The extractive summarizer is deterministic but intentionally conservative.
-- Subscriber preference management and delivery analytics are out of scope for the MVP.
-
 ## Disclaimer
 
 PolicyBrief G2C generates automated summaries from official public materials. The original publication is the authoritative source. Details may change after collection. Users should verify eligibility, deadlines, application procedures, and legal requirements through the original source or responsible agency.
