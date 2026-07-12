@@ -1,0 +1,35 @@
+name: Bootstrap PolicyBrief G2C
+
+on:
+  push:
+    paths:
+      - ".bootstrap/payload.part*"
+      - ".github/workflows/bootstrap-policybrief.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Expand project payload
+        run: |
+          set -euo pipefail
+          cat .bootstrap/payload.part* > policybrief.zip.b64
+          base64 -d policybrief.zip.b64 > policybrief.zip
+          unzip -o policybrief.zip
+          rm -rf .bootstrap policybrief.zip policybrief.zip.b64 .github/workflows/bootstrap-policybrief.yml
+      - name: Commit expanded project
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Build PolicyBrief G2C MVP" || exit 0
+          git push
