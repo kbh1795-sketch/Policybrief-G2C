@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ issue.title }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f8;color:#1f2937;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+  <div style="max-width:720px;margin:0 auto;background:#ffffff;">
+    <header style="padding:28px 24px;border-bottom:4px solid #2563eb;">
+      <div style="font-size:14px;color:#475569;">정책한눈 | PolicyBrief G2C</div>
+      <h1 style="margin:8px 0 6px;font-size:28px;line-height:1.25;color:#111827;">{{ issue.title }}</h1>
+      <p style="margin:0;color:#475569;font-size:14px;">
+        발행일 {{ issue.publication_date.strftime('%Y-%m-%d') }} · 대상 기간 {{ issue.covered_start.strftime('%Y-%m-%d') }} ~ {{ issue.covered_end.strftime('%Y-%m-%d') }}
+      </p>
+    </header>
+    <main style="padding:24px;">
+      <p style="margin:0 0 24px;line-height:1.7;">이번 호는 공식 공개 자료를 바탕으로 주요 정책을 시민이 확인하기 쉬운 형식으로 정리한 자동 초안입니다.</p>
+      <section>
+        <h2 style="font-size:20px;margin:0 0 12px;">이번 주 핵심 정책</h2>
+        {% for doc in issue.documents[:3] %}
+        <div style="border:1px solid #dbe3ef;border-radius:8px;padding:16px;margin-bottom:12px;">
+          <strong style="display:block;font-size:16px;line-height:1.4;">{{ doc.title }}</strong>
+          <span style="display:block;color:#64748b;font-size:13px;margin-top:4px;">{{ doc.agency }} · {{ doc.published_at.strftime('%Y-%m-%d') }} · 중요도 {{ '%.1f'|format(doc.importance_score) }}</span>
+          <p style="line-height:1.6;margin:10px 0 0;">{{ doc.summary }}</p>
+        </div>
+        {% endfor %}
+      </section>
+      {% for category, docs in grouped_documents.items() %}
+      <section style="margin-top:28px;">
+        <h2 style="font-size:20px;margin:0 0 12px;">{{ category }}</h2>
+        {% for doc in docs %}
+        <article style="border:1px solid #dbe3ef;border-radius:8px;padding:18px;margin-bottom:16px;">
+          <h3 style="font-size:18px;line-height:1.4;margin:0 0 6px;">{{ doc.title }}</h3>
+          <p style="margin:0 0 12px;color:#64748b;font-size:13px;">{{ doc.agency }} · {{ doc.published_at.strftime('%Y-%m-%d') }}</p>
+          <p style="line-height:1.7;margin:0 0 12px;">{{ doc.summary }}</p>
+          <ul style="padding-left:20px;line-height:1.6;">
+            {% for point in doc.key_points %}
+            <li>{{ point }}</li>
+            {% endfor %}
+          </ul>
+          <p style="line-height:1.6;"><strong>국민에게 어떤 영향이 있나요?</strong><br>{{ doc.citizen_impact or '원문에서 확인되지 않음' }}</p>
+          <p style="line-height:1.6;"><strong>대상</strong><br>{{ doc.eligibility or '원문에서 확인되지 않음' }}</p>
+          <p style="line-height:1.6;"><strong>신청 방법</strong><br>{{ doc.application_method or '원문에서 확인되지 않음' }}</p>
+          <p style="line-height:1.6;"><strong>시행일/마감</strong><br>{{ doc.effective_date or '원문에서 확인되지 않음' }} / {{ doc.deadline or '원문에서 확인되지 않음' }}</p>
+          <a href="{{ doc.canonical_url }}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 14px;border-radius:6px;">원문 보기</a>
+        </article>
+        {% endfor %}
+      </section>
+      {% endfor %}
+    </main>
+    <footer style="padding:20px 24px;background:#eef2f7;color:#475569;font-size:12px;line-height:1.6;">
+      이 뉴스레터는 공식 공개 자료를 자동 요약한 초안입니다. 원문 게시물이 최종적이고 권위 있는 출처이며, 세부 내용은 변경될 수 있습니다. 자격, 기한, 절차는 원문 또는 담당 기관을 통해 반드시 확인하세요.
+      <br>수신 거부 기능은 향후 구독 관리 연동 시 제공됩니다.
+    </footer>
+  </div>
+</body>
+</html>

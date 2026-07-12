@@ -1,0 +1,25 @@
+{{ issue.title }}
+정책한눈 | PolicyBrief G2C
+발행일 {{ issue.publication_date.strftime('%Y-%m-%d') }}
+대상 기간 {{ issue.covered_start.strftime('%Y-%m-%d') }} ~ {{ issue.covered_end.strftime('%Y-%m-%d') }}
+
+이번 호는 공식 공개 자료를 바탕으로 주요 정책을 시민이 확인하기 쉬운 형식으로 정리한 자동 초안입니다.
+
+{% for category, docs in grouped_documents.items() %}
+[{{ category }}]
+{% for doc in docs %}
+- {{ doc.title }} ({{ doc.agency }}, {{ doc.published_at.strftime('%Y-%m-%d') }})
+  요약: {{ doc.summary }}
+  핵심:
+{% for point in doc.key_points %}
+    * {{ point }}
+{% endfor %}
+  영향: {{ doc.citizen_impact or '원문에서 확인되지 않음' }}
+  대상: {{ doc.eligibility or '원문에서 확인되지 않음' }}
+  신청 방법: {{ doc.application_method or '원문에서 확인되지 않음' }}
+  시행일/마감: {{ doc.effective_date or '원문에서 확인되지 않음' }} / {{ doc.deadline or '원문에서 확인되지 않음' }}
+  원문: {{ doc.canonical_url }}
+
+{% endfor %}
+{% endfor %}
+고지: 이 뉴스레터는 공식 공개 자료를 자동 요약한 초안입니다. 원문 게시물이 최종적이고 권위 있는 출처이며, 세부 내용은 변경될 수 있습니다. 자격, 기한, 절차는 원문 또는 담당 기관을 통해 반드시 확인하세요.

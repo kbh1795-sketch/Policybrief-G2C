@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>예시정책청 정책 RSS</title>
+    <link>https://demo.example.go.kr</link>
+    <description>가상의 정책 자료</description>
+    <item>
+      <title>전국 소상공인 에너지 비용 지원 신청 안내</title>
+      <link>https://demo.example.go.kr/policy/energy-support.html</link>
+      <pubDate>Fri, 10 Jul 2026 09:00:00 +0900</pubDate>
+      <description>정부는 전국 소상공인의 에너지 비용 부담을 줄이기 위해 비용 일부를 지원합니다. 지원 대상은 사업자등록을 한 소상공인입니다. 신청은 2026년 7월 20일부터 온라인 누리집에서 접수합니다. 신청 마감은 2026년 8월 31일까지입니다.</description>
+    </item>
+    <item>
+      <title>폭염 대비 취약계층 건강 보호 대책 시행</title>
+      <link>https://demo.example.go.kr/policy/heat-health.html</link>
+      <pubDate>Thu, 09 Jul 2026 11:00:00 +0900</pubDate>
+      <description>정부는 폭염 기간 취약계층의 건강 피해를 줄이기 위해 방문 건강 확인과 냉방용품 지원을 시행합니다. 대상은 독거 어르신, 장애인, 만성질환자 등입니다. 지방자치단체와 보건소가 2026년 7월 15일부터 순차적으로 안내합니다.</description>
+    </item>
+  </channel>
+</rss>

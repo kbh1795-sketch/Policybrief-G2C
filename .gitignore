@@ -1,0 +1,24 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Local/runtime data
+data/*.db
+data/*.sqlite
+data/raw/*
+data/processed/*
+data/newsletters/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/newsletters/.gitkeep
+subscribers.txt
+*.log

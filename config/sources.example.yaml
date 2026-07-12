@@ -1,0 +1,33 @@
+sources:
+  - name: fictional_policy_rss
+    agency: 예시정책청
+    source_type: RSS
+    base_url: https://example.go.kr
+    feed_url: https://example.go.kr/rss/policy.xml
+    allowed_domains:
+      - example.go.kr
+    enabled: false
+    request_delay_seconds: 1.0
+    user_agent: PolicyBrief-G2C/0.1 (+https://github.com/example/Policybrief-G2C)
+    max_items_per_run: 20
+    note: "예시 설정입니다. 실제 운영 전 출처, 선택자, 이용정책을 반드시 검증하세요."
+
+  - name: fictional_policy_html
+    agency: 예시복지부
+    source_type: HTML
+    base_url: https://welfare.example.go.kr
+    list_url: https://welfare.example.go.kr/news
+    allowed_domains:
+      - welfare.example.go.kr
+    article_link_selector: "a.policy-link"
+    title_selector: "h1"
+    content_selector: "main.article"
+    date_selector: "time"
+    pagination:
+      max_pages: 1
+      page_param: page
+    enabled: false
+    request_delay_seconds: 1.0
+    user_agent: PolicyBrief-G2C/0.1 (+https://github.com/example/Policybrief-G2C)
+    max_items_per_run: 20
+    note: "예시 설정입니다. 실제 운영 전 출처, 선택자, 이용정책을 반드시 검증하세요."
